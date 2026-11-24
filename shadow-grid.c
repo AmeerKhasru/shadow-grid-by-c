@@ -12,19 +12,34 @@ typedef enum {
     DIR_RIGHT
 } Direction;
 
-void drawMap(char map[ROWS][COLS], int px, int py) {
-    // Clear screen (works on Windows and Unix-like terminals)
+// Count total gems on the map
+int countGems(char map[ROWS][COLS]) {
+    int count = 0;
+    for (int r = 0; r < ROWS; r++) {
+        for (int c = 0; c < COLS; c++) {
+            if (map[r][c] == '*') {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+void drawMap(char map[ROWS][COLS], int px, int py, int score, int gemsLeft) {
+    // Clear terminal screen cross-platform
 #ifdef _WIN32
     system("cls");
 #else
     system("clear");
 #endif
 
-    printf("=== STAGE 1: DUNGEON MOVEMENT ===\n");
-    printf("Move: W/A/S/D + Enter | Quit: Q + Enter\n\n");
+    printf("=== ASCII QUEST (STAGE 2) ===\n");
+    printf("Move: W/A/S/D + Enter | Quit: Q + Enter\n");
+    printf("Score: %d | Gems Left: %d\n\n", score, gemsLeft);
 
     for (int r = 0; r < ROWS; r++) {
         for (int c = 0; c < COLS; c++) {
+            // Render player dynamically without altering floor tile
             if (r == py && c == px) {
                 printf("@");
             } else {
@@ -34,10 +49,11 @@ void drawMap(char map[ROWS][COLS], int px, int py) {
         printf("\n");
     }
 
-    printf("\nPosition: (%d, %d)\n", px, py);
+    printf("\nLegend: @=Player  *=Gem (+10)  E=Exit (all gems)  #=Wall\n");
 }
 
 Direction parseInput(char ch, int *shouldQuit) {
+    // Normalize uppercase letters to lowercase
     if (ch >= 'A' && ch <= 'Z') {
         ch = ch + ('a' - 'A');
     }
@@ -52,10 +68,12 @@ Direction parseInput(char ch, int *shouldQuit) {
     }
 }
 
-void tryMove(char map[ROWS][COLS], int *px, int *py, Direction dir) {
+void tryMove(char map[ROWS][COLS], int *px, int *py, Direction dir,
+             int *score, int *gemsLeft, int *hasWon, int *exitLockedMsg) {
     int nx = *px;
     int ny = *py;
 
+    // Compute candidate target coordinates
     switch (dir) {
         case DIR_UP:    ny--; break;
         case DIR_DOWN:  ny++; break;
@@ -64,8 +82,27 @@ void tryMove(char map[ROWS][COLS], int *px, int *py, Direction dir) {
         case DIR_NONE:  return;
     }
 
-    // Boundary and wall check
+    // Check bounds and solid wall collision
     if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && map[ny][nx] != '#') {
+        char targetTile = map[ny][nx];
+
+        // Collect gem and clear tile
+        if (targetTile == '*') {
+            *score += 10;
+            (*gemsLeft)--;
+            map[ny][nx] = '.';
+        }
+        // Unlock exit only after collecting all gems
+        else if (targetTile == 'E') {
+            if (*gemsLeft == 0) {
+                *hasWon = 1;
+            } else {
+                *exitLockedMsg = 1;
+                return;
+            }
+        }
+
+        // Commit player movement
         *px = nx;
         *py = ny;
     }
@@ -74,23 +111,33 @@ void tryMove(char map[ROWS][COLS], int *px, int *py, Direction dir) {
 int main(void) {
     char map[ROWS][COLS] = {
         "####################",
-        "#........#.........#",
+        "#...*....#......*..#",
         "#..###...#...###...#",
         "#........#.........#",
-        "#......#####.......#",
+        "#..*...#####...*...#",
         "#..................#",
         "#...###.....###....#",
-        "#.....#.......#....#",
+        "#..*..#.......#..E.#",
         "#.....#.......#....#",
         "####################"
     };
 
     int px = 1;
     int py = 1;
+    int score = 0;
+    int gemsLeft = countGems(map);
     int shouldQuit = 0;
+    int hasWon = 0;
+    int exitLockedMsg = 0;
 
-    while (!shouldQuit) {
-        drawMap(map, px, py);
+    // Main game loop stops on quit or win
+    while (!shouldQuit && !hasWon) {
+        drawMap(map, px, py, score, gemsLeft);
+
+        if (exitLockedMsg) {
+            printf("\nExit is locked! Collect all gems first (%d left).\n", gemsLeft);
+            exitLockedMsg = 0;
+        }
 
         printf("Enter move: ");
         char input;
@@ -99,9 +146,17 @@ int main(void) {
         }
 
         Direction dir = parseInput(input, &shouldQuit);
-        tryMove(map, &px, &py, dir);
+        tryMove(map, &px, &py, dir, &score, &gemsLeft, &hasWon, &exitLockedMsg);
     }
 
-    printf("Exited game.\n");
+    // Render final state and summary
+    drawMap(map, px, py, score, gemsLeft);
+
+    if (hasWon) {
+        printf("\nStage cleared! Final Score: %d\n", score);
+    } else {
+        printf("\nGame exited. Final Score: %d\n", score);
+    }
+
     return 0;
 }
