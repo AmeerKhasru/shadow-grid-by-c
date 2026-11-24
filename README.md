@@ -1,22 +1,23 @@
-# shadow-grid-by-c
-A lightweight, terminal-based grid dungeon and treasure hunt game written in pure **C**. Navigate through walls, collect hidden treasures, avoid hazards, and reach the exit door—built step by step to practice core C programming, 2D arrays, pointers, and game loop logic.
+# 🗡️ Shadow Grid
+
+A lightweight, terminal-based grid dungeon and treasure hunt game written in pure **C**. Navigate through walls, collect hidden gems, unlock the exit door, and build toward full dungeon survival—developed step by step to practice core C programming, 2D arrays, pointers, and game state logic.
 
 ---
 
 ## 🎮 Gameplay Overview
 
-You control the adventurer (`@`) inside a 2D grid dungeon. Your goal is to explore the map, gather collectibles, survive obstacles, and find the exit (`E`).
+You control the adventurer (`@`) inside a 2D grid dungeon. Collect all gems (`*`) to unlock and reach the exit (`E`) while tracking your live score and remaining gems.
 
 ### Map Legend
-| Symbol | Meaning |
-| :---: | :--- |
-| `@` | Player |
-| `#` | Wall (Impassable) |
-| `.` | Open Floor |
-| `*` | Treasure / Gem *(Upcoming)* |
-| `^` | Trap / Hazard *(Upcoming)* |
-| `G` | Patrol Enemy *(Upcoming)* |
-| `E` | Exit Door *(Upcoming)* |
+| Symbol | Meaning | Status |
+| :---: | :--- | :--- |
+| `@` | Player | Active |
+| `#` | Wall (Impassable) | Active |
+| `.` | Open Floor | Active |
+| `*` | Gem (+10 points; clears tile once collected) | Active |
+| `E` | Exit Door (Unlocks once all `*` gems are collected) | Active |
+| `^` | Trap / Hazard | Planned (Stage 3) |
+| `G` | Patrol Enemy | Planned (Stage 4) |
 
 ---
 
@@ -30,14 +31,14 @@ You control the adventurer (`@`) inside a 2D grid dungeon. Your goal is to explo
 | `D` | Move Right |
 | `Q` | Quit Game |
 
-*(Note: In Stage 1, press `Enter` after each key input.)*
+*(Note: Press `Enter` after each key input.)*
 
 ---
 
 ## 🛠️ Roadmap & Features
 
 - [x] **Stage 1:** 2D grid rendering, `WASD` movement, and wall/boundary collision detection
-- [ ] **Stage 2:** Collectible gems (`*`), live score tracking, and level exit (`E`)
+- [x] **Stage 2:** Collectible gems (`*`), live score & remaining gem counter, tile clearing, and gem-gated exit (`E`)
 - [ ] **Stage 3:** Traps (`^`), player health (`HP`), and Game Over / Victory screens
 - [ ] **Stage 4:** Moving patrol enemies (`G`) with turn-based AI
 - [ ] **Stage 5:** Multiple levels and persistent high-score saving via File I/O
@@ -48,4 +49,10 @@ You control the adventurer (`@`) inside a 2D grid dungeon. Your goal is to explo
 ## 🚀 How to Compile & Run
 
 ### Prerequisites
-Make sure you have a C compiler installed, such as **GCC** or **Clang**
+Make sure you have a C compiler installed, such as **GCC** or **Clang**.
+
+### Steps
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/AmeerKhasru/ascii-quest.git](https://github.com/AmeerKhasru/ascii-quest.git)
+   cd ascii-quest
